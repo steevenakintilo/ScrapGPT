@@ -12,6 +12,8 @@ from random import randint
 import undetected_chromedriver as uc 
 import pickle
 import os
+import emoji
+
 import yaml
 
 class Scraper:
@@ -24,6 +26,7 @@ class Scraper:
     #options.add_argument('headless')
     driver = uc.Chrome(options=options)
     driver.maximize_window()
+    
     login_link = "https://chat.openai.com/auth/login"
     emailxpath = "/html/body/div/main/section/div/div/div/div[1]/div/form/div[1]/div/div/div/input"
     passwordxpath = "/html/body/div[1]/main/section/div/div/div/form/div[2]/div/div[2]/div/input"
@@ -65,6 +68,7 @@ def while_loop(S):
     query = input("Ask anything to ScrapGPT: ")
     if query.lower() == "stop":
       stop = False
+      quit(print("ScrapGPT going off"))
     if S.has_asked_question == False:
       a = scrapping(S,query,"new",S.question_nb)
     else:
@@ -77,48 +81,53 @@ def save_chatgpt_account(S,email_,password_):
   print("Starting Login")
   S.driver.get(S.login_link)
   time.sleep(2)
+  ggl = "/html/body/div/main/section/div/div/div/div[4]/form[2]/button/span[2]"
+
   element = WebDriverWait(S.driver, 15).until(
   EC.presence_of_element_located((By.CSS_SELECTOR, '[data-testid="login-button"]')))
   login_button = S.driver.find_element(By.CSS_SELECTOR,'[data-testid="login-button"]')
   login_button.click()
+  time.sleep(3)
+  
   element = WebDriverWait(S.driver, 15).until(
-  EC.presence_of_element_located((By.XPATH, S.emailxpath)))
+  EC.presence_of_element_located((By.XPATH, ggl)))
+  print(element.text)
+  element.click()
+  time.sleep(5)
 
-  email = S.driver.find_element(By.XPATH,S.emailxpath)
-  email.send_keys(email_) 
-
-  element = WebDriverWait(S.driver, 15).until(
-  EC.presence_of_element_located((By.XPATH, S.continuexpath)))
-
-  continuebtn = S.driver.find_element(By.XPATH,S.continuexpath)
+  email_ = "/html/body/div[1]/div[1]/div[2]/div/c-wiz/div/div[2]/div/div[1]/div/form/span/section/div/div/div[1]/div/div[1]/div/div[1]/input"
+  password_ = "/html/body/div[1]/div[1]/div[2]/div/c-wiz/div/div[2]/div/div[1]/div/form/span/section[2]/div/div/div[1]/div[1]/div/div/div/div/div[1]/div/div[1]/input"
+  btn_ = "/html/body/div[1]/div[1]/div[2]/div/c-wiz/div/div[2]/div/div[2]/div/div[1]/div/div/button"
   
-  continuebtn.click()
-  element = WebDriverWait(S.driver, 15).until(
-  EC.presence_of_element_located((By.XPATH, S.passwordxpath)))
-  password = S.driver.find_element(By.XPATH,S.passwordxpath)
-  password.send_keys(password_) 
+  em = "s.sangokuhomer420@gmail.com"
+  ps = "steeven1"
+  element = WebDriverWait(S.driver, 30).until(EC.presence_of_element_located((By.XPATH, email_)))
+  email = S.driver.find_element(By.XPATH, email_)
+  email.send_keys(em)
 
-  element = WebDriverWait(S.driver, 15).until(
-  EC.presence_of_element_located((By.XPATH, S.continuexpath2)))
+  element = WebDriverWait(S.driver, 30).until(EC.presence_of_element_located((By.XPATH,btn_)))
+  btn = S.driver.find_element(By.XPATH,btn_)
+  btn.click()
   
-  continuebtn = S.driver.find_element(By.XPATH,S.continuexpath2)
-  
-  continuebtn.click()
+  time.sleep(5)
 
-  time.sleep(2)
-  
-  try:
-    element = WebDriverWait(S.driver, 15).until(
-    EC.presence_of_element_located((By.XPATH, S.passwordxpath)))
-    password = S.driver.find_element(By.XPATH,S.passwordxpath)
-    password.send_keys(password_) 
+  element = WebDriverWait(S.driver, 30).until(EC.presence_of_element_located((By.XPATH, password_)))
+  password = S.driver.find_element(By.XPATH, password_)
+  password.send_keys(ps)
 
-  except:
-    pass
-  
+  element = WebDriverWait(S.driver, 30).until(EC.presence_of_element_located((By.XPATH,btn_)))
+  btn = S.driver.find_element(By.XPATH,btn_)
+  btn.click()
+  time.sleep(3)
   print("Login went well")
 
-def scrapping(S, query,mode,nb):
+def remove_emojie(text):
+    return emoji.replace_emoji(text, replace='')
+
+def scrapping(S, query,mode,nb,stop=0):
+    if stop >= 10:
+      print("Too many errors happend closing ScrapGPT")
+      quit()
     if mode == "new":
       S.driver.get(S.mainpage)
       
@@ -134,14 +143,16 @@ def scrapping(S, query,mode,nb):
     time.sleep(0.5)
     ask.click()
     time.sleep(0.5)
-    ask.send_keys(query) 
+    text_ = "je vais te donner un tweet auquel tu devras répondre et selon le ton du tweet (s'il est triste, drôle, intérrésant etc) réponds de maniére différentes en 1 seule phrases: "
+    text_ = "Je vais te donner un tweet si le tweet est triste réponds de maniére triste en 1 phrase,si le tweet est drôle réponds de maniére drôle en 1 phrase sinon réponds avec un language famillier comme un utilisateur de twitter en 1 ligne: "
+    eee = remove_emojie(text_+query)
+    ask.send_keys(eee) 
     ask.send_keys(Keys.RETURN)
-    time.sleep(5)
+    time.sleep(10)
     
-    for i in range(7):
+    for i in range(15):
       try:
-          element = WebDriverWait(S.driver, 3).until(
-          EC.presence_of_element_located((By.CSS_SELECTOR, '[data-testid="send-button"]')))
+        element = S.driver.find_element(By.CSS_SELECTOR, '[data-testid="send-button"]')
       except:
         time.sleep(10)
 
@@ -149,11 +160,13 @@ def scrapping(S, query,mode,nb):
       element = WebDriverWait(S.driver, 9).until(
       EC.presence_of_element_located((By.CSS_SELECTOR, f'[data-testid="conversation-turn-{nb}"]')))
       answer = S.driver.find_element(By.CSS_SELECTOR,f'[data-testid="conversation-turn-{nb}"]')
+      answer = answer.text
+      return (answer.replace("ChatGPT",""))
     except Exception as e:
       if "element = WebDriverWait(S.driver, 9).until(" in str(e):
         time.sleep(15)
-        scrapping(S,query,mode,nb)
+        stop+=1
+        scrapping(S,query,mode,nb,stop)
       else:
-        print("An error happend closing the program")
-    answer = answer.text
-    return (answer.replace("ChatGPT",""))
+        print("An error happend try again")
+        return("")
