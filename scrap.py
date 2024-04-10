@@ -2,15 +2,11 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
-from os import system
 import time
-import os.path
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
-import traceback
 from random import randint
 import undetected_chromedriver as uc 
-import pickle
 import os
 import yaml
 
@@ -45,7 +41,7 @@ class Scraper:
     user_google_password = data["account_password"]
     
 
-def maker(q,nb):
+def maker(questions):
   S =  Scraper()
 
   try:
@@ -55,9 +51,9 @@ def maker(q,nb):
     save_chatgpt_account(S,"","")
   ans_list = []
 
-  for i in range(len(q)):
+  for i in range(len(questions)):
     time.sleep(1)
-    ans = while_loop(S,q[i])
+    ans = while_loop(S,questions[i])
     ans_list.append(ans)
   S.driver.close()
   return ans_list
@@ -66,8 +62,8 @@ def maker(q,nb):
 def while_loop(S,q):
   q = q.replace("\n" , " ")
   query = q
-  a = scrapping(S,query,"new",S.question_nb)
-  return a
+  answer = scrapping(S,query,"new",S.question_nb)
+  return answer
   
 def save_chatgpt_account(S,email_,password_):
   try:
@@ -105,19 +101,19 @@ def save_chatgpt_account(S,email_,password_):
     btn_2 = "/html/body/div[1]/div[1]/div[2]/c-wiz/div/div[3]/div/div[1]/div/div/button/span"
     em = S.user_google_mail
     ps = S.user_google_password
-    v1 = False
+    version_one_of_google_login_page = False
     try:
       element = WebDriverWait(S.driver, 10).until(EC.presence_of_element_located((By.XPATH, email_)))
       email = S.driver.find_element(By.XPATH, email_)
       email.send_keys(em)
     except:
-      v1 = True
+      version_one_of_google_login_page = True
       element = WebDriverWait(S.driver, 10).until(EC.presence_of_element_located((By.XPATH, email_2)))
       email = S.driver.find_element(By.XPATH, email_2)
       email.send_keys(em)
     
     try:
-      if v1 == True:
+      if version_one_of_google_login_page == True:
         a = 10/0
       element = WebDriverWait(S.driver, 10).until(EC.presence_of_element_located((By.XPATH,btn_)))
       btn = S.driver.find_element(By.XPATH,btn_)
@@ -130,7 +126,7 @@ def save_chatgpt_account(S,email_,password_):
     time.sleep(5)
 
     try:
-      if v1 == True:
+      if version_one_of_google_login_page == True:
         a = 10/0
       element = WebDriverWait(S.driver, 10).until(EC.presence_of_element_located((By.XPATH, password_)))
       password = S.driver.find_element(By.XPATH, password_)
@@ -141,7 +137,7 @@ def save_chatgpt_account(S,email_,password_):
       password.send_keys(ps)
     
     try:
-      if v1 == True:
+      if version_one_of_google_login_page == True:
         a = 10/0
       element = WebDriverWait(S.driver, 10).until(EC.presence_of_element_located((By.XPATH,btn_)))
       btn = S.driver.find_element(By.XPATH,btn_)
@@ -150,10 +146,10 @@ def save_chatgpt_account(S,email_,password_):
       element = WebDriverWait(S.driver, 10).until(EC.presence_of_element_located((By.XPATH,btn_2)))
       btn = S.driver.find_element(By.XPATH,btn_2)
       btn.click()
+    
     time.sleep(3)
     print("Login went well")
-    time.sleep(6)
-
+    time.sleep(5)
     try:
        element = WebDriverWait(S.driver, 10).until(
       EC.presence_of_element_located((By.ID, S.askid)))
@@ -167,7 +163,7 @@ def save_chatgpt_account(S,email_,password_):
 
 
 def scrapping(S, query,mode,nb,stop=0):
-    print("Answering gpt")
+    S.driver.implicitly_wait(15)
     if stop >= 10:
       print("Too many errors happend closing ScrapGPT")
       quit()
@@ -184,11 +180,15 @@ def scrapping(S, query,mode,nb,stop=0):
     time.sleep(10)
     
     for i in range(15):
+      get_url = S.driver.current_url
+      if "https://chat.openai.com/auth/login" in get_url:
+        print("Wrong email or password change it on configuration.yml file")
+        exit()
       try:
         element = S.driver.find_element(By.CSS_SELECTOR, '[data-testid="send-button"]')
       except Exception as e:
         time.sleep(10)
-
+    print("Answering gpt")
     try:
       element = WebDriverWait(S.driver, 9).until(
       EC.presence_of_element_located((By.CSS_SELECTOR, f'[data-testid="conversation-turn-{nb}"]')))
