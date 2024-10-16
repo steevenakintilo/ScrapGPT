@@ -44,11 +44,12 @@ class Scraper:
 def maker(questions):
   S =  Scraper()
 
-  try:
-    save_chatgpt_account(S,"","")
-  except:
-    time.sleep(15)
-    save_chatgpt_account(S,"","")
+  # try:
+  #   save_chatgpt_account(S,"","")
+  # except:
+  #   time.sleep(15)
+  #   save_chatgpt_account(S,"","")
+
   ans_list = []
 
   for i in range(len(questions)):
@@ -64,7 +65,10 @@ def while_loop(S,q):
   query = q
   answer = scrapping(S,query,"new",S.question_nb)
   return answer
-  
+
+
+# No need to login to google an account so we skip this function
+
 def save_chatgpt_account(S,email_,password_):
   try:
     S.driver.implicitly_wait(15)
@@ -161,7 +165,6 @@ def save_chatgpt_account(S,email_,password_):
     pass
 
 
-
 def scrapping(S, query,mode,nb,stop=0):
     S.driver.implicitly_wait(15)
     if stop >= 10:
@@ -188,7 +191,13 @@ def scrapping(S, query,mode,nb,stop=0):
         element = S.driver.find_element(By.CSS_SELECTOR, '[data-testid="send-button"]')
       except Exception as e:
         time.sleep(10)
+    
+    
+    
     print("Answering gpt")
+
+
+
     try:
       element = WebDriverWait(S.driver, 9).until(
       EC.presence_of_element_located((By.CSS_SELECTOR, f'[data-testid="conversation-turn-{nb}"]')))
