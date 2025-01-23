@@ -13,13 +13,19 @@ import yaml
 class Scraper:
     
     wait_time = 5
-    options = uc.ChromeOptions() 
+    options = uc.ChromeOptions()
     options.add_experimental_option(
     "prefs", {"credentials_enable_service": False, "profile.password_manager_enabled": False})
     options.add_argument('headless')
     ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36'
     options.add_argument(f'--user-agent={ua}') 
-    driver = uc.Chrome(options=options)
+    try:
+      driver = uc.Chrome(options=options)
+    except Exception as e:
+      if "This version of ChromeDriver only supports Chrome version" in str(e):
+        print("Update your chrome version!!!")
+        print("https://www.google.com/intl/fr_fr/chrome/")
+        exit()
     driver.maximize_window()
     login_link = "https://chat.openai.com/auth/login"
     emailxpath = "/html/body/div/main/section/div/div/div/div[1]/div/form/div[1]/div/div/div/input"
