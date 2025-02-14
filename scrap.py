@@ -26,6 +26,7 @@ class Scraper:
         print("Update your chrome version!!!")
         print("https://www.google.com/intl/fr_fr/chrome/")
         exit()
+    
     driver.maximize_window()
     login_link = "https://chat.openai.com/auth/login"
     emailxpath = "/html/body/div/main/section/div/div/div/div[1]/div/form/div[1]/div/div/div/input"
@@ -194,10 +195,11 @@ def scrapping(S, query,mode,nb,stop=0):
         print("Wrong email or password change it on configuration.yml file")
         exit()
       try:
-        element = S.driver.find_element(By.CSS_SELECTOR, '[data-testid="send-button"]')
-      except Exception as e:
+        element = S.driver.find_element(By.XPATH, '[data-testid="stop-button"]')
         time.sleep(10)
-    
+      except Exception as e:
+        pass
+
     
     
     print("Answering gpt")
